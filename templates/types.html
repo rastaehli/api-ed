@@ -1,0 +1,26 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+	<div class="row divider green">
+		<div class="col-md-12"></div>
+	</div>
+	<div class="row banner listtype">
+		<div class="col-md-11 col-md-offset-1 padding-none">
+			<h1>{{ category_name }}</h1>
+		</div>
+	</div>
+
+	<h1>{{ category_name }}</h1>
+
+	{% for type in types %}
+		<a href = "{{url_for('showListItems', id = type.id)}}">
+			<div class="row">
+				<div class="col-md-1"></div>
+					<div class="col-md-10 typelist-list">
+						<h3>{{type.name}}</h3>
+					</div>
+				<div class="col-md-1"></div>
+			</div>
+		</a>
+	{% endfor %}
+{% endblock %}

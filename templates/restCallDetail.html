@@ -1,0 +1,46 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+	<div class="row divider green">
+		<div class="col-md-12"></div>
+	</div>
+
+	<h1>{{ restCall.method }}  {{ restCall.path }}</h1>
+
+	{{restCall.description}}
+
+	<h2>Parameters</h2>
+	<table class="table">
+		<div class="col-md-12">
+			<tr color=green>
+				<td>Type</td>
+				<td>Name</td>
+				<td>Description</td>
+			</tr>
+		</div>
+	{% for param in restCall.parameters %}
+			<div class="row">
+				<div class="col-md-1"></div>
+					<div class="col-md-10 parameter-descr-list">
+						<tr>
+							<td>{{param.type}}</td>
+							<td>{{param.name}}</td>
+							<td>{{param.description}}</td>
+						</tr>
+					</div>
+				<div class="col-md-1"></div>
+			</div>
+	{% endfor %}
+	</table>
+
+	<h2>Example Request</h2>
+<pre>
+{{restCall.exampleRequest}}
+</pre>
+
+	<h2>Example Response</h2>
+<pre>
+{{restCall.exampleResponse}}
+</pre>
+	
+{% endblock %}
