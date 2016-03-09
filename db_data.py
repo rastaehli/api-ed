@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from orm import Parameter, RestCall, db_connection_info
+from orm import User, Parameter, RestCall, db_connection_info
 
 # set db connection info
 engine = create_engine(db_connection_info)
@@ -41,7 +41,11 @@ deleteAll()
 tokenDescription = 'Valid token value from POST /access/token response.'
 tokenExample = '"Ejr2YotnFZFEjr1zCsicMWpAAotnFZFEjr1zCsic"'
 
-call = RestCall('GET', 'shipments', 'me'
+me = User('Richard Staehli', 'rstaehli@acm.org')
+session.add(me)
+session.commit()
+
+call = RestCall('GET', 'shipments', me.id
 	).requireQueryParam('ref', 'String, 3 to 12 characters long.', 'A (prefix of a) trace value associated with a shipment.', '5555'
 	).optionalQueryParam('sizelimit', 'Integer, 1 to 10000', 'Maximum number of items to return.', '1000'
 	).optionalQueryParam('offset', 'Integer, 0 to maxint', 'Starting offset to return the next sizelimit items from list of matching items.', '0'
@@ -77,7 +81,7 @@ call = RestCall('GET', 'shipments', 'me'
 session.add(call)
 session.commit()
 
-call = RestCall('GET', 'shipments/count', 'me'
+call = RestCall('GET', 'shipments/count', me.id
 	).requireQueryParam('ref', 'String, 3 to 12 characters long.', 'A (prefix of a) trace value associated with a shipment.', '5555'
 	).setDescription('Get the total count of client shipments with trace values matching the given {ref}.'
 	).requireAuthenticationBearerToken(tokenDescription, tokenExample
@@ -97,7 +101,7 @@ session.add(call)
 session.commit()
  
 
-call = RestCall('GET', 'shipments/{id}', 'me'
+call = RestCall('GET', 'shipments/{id}', me.id
 	).requirePathParam('id', 'String, 3 to 12 characters long.', 'Unique identifier for an Expeditors shipment, URL-encoded.', '2123456789'
 	).setDescription('Get information about shipment with the given {id}.'
 	).requireAuthenticationBearerToken(tokenDescription, tokenExample
@@ -123,7 +127,7 @@ session.add(call)
 session.commit()
  
 
-call = RestCall('GET', 'shipments/{id}/events', 'me'
+call = RestCall('GET', 'shipments/{id}/events', me.id
 	).requirePathParam('id', 'String, 3 to 12 characters long.', 'Unique identifier for an Expeditors shipment, URL-encoded.', '2123456789'
 	).setDescription('Get a list of events for client shipment with the given {id}.'
 	).requireAuthenticationBearerToken(tokenDescription, tokenExample
@@ -164,7 +168,7 @@ session.add(call)
 session.commit()
  
  
-call = RestCall('GET', 'shipments/{id}/references', 'me'
+call = RestCall('GET', 'shipments/{id}/references', me.id
 	).requirePathParam('id', 'String, 3 to 12 characters long.', 'Unique identifier for an Expeditors shipment, URL-encoded.', '2123456789'
 	).setDescription('Get a list of references for client shipment with the given {id}.'
 	).requireAuthenticationBearerToken(tokenDescription, tokenExample
@@ -193,7 +197,7 @@ session.add(call)
 session.commit()
 
  
-call = RestCall('POST', 'access/token', 'me'
+call = RestCall('POST', 'access/token', me.id
 	).setDescription('Request an access token by POSTing client credentials. Visibility validates that the client with these credentials is registered to use the API. It then generates a non-forgeable, strongly encrypted token that identifies this client.'
 	).requireAuthenticationBasicCredentials('The Expeditors API registration process generates a unique client_id and password.  Construct the client credentials by formatting these as {client_id}:{password}, the Base64 encoding this string.', 'czZCaGRSa3F0MzpnWDFmQmF0M2JW'
 	).requireBodyParam('grant_type', '"client_credentials" is the only value currently supported.', 'Identifies the type of access required.', '"client_credentials"'
@@ -221,7 +225,7 @@ session.add(call)
 session.commit()
 
 
-call = RestCall('GET', 'webcheck', 'me'
+call = RestCall('GET', 'webcheck', me.id
 	).setDescription('Request confirmation web service is available.'
 	).setResponseFormatTextPlain(
     ).setExampleRequest(

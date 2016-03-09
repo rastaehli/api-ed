@@ -13,6 +13,27 @@ bodyParameterType = 'body parameter'
 responseFormatJSON = 'application/json'
 responseFormatTextPlain = 'text/plain'
 
+class User(Base):
+
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+        
+    __tablename__ = 'user'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(250), nullable=False)
+    email = Column(String(250), nullable=False)
+    picture = Column(String(250))
+
+    @property
+    def serialize(self):
+        """return object data in easily serializable format"""
+        return {
+            'name'        : self.name,
+            'id'          : self.id,
+        }
+
 class RestCall(Base):
 
     def __init__(self, method, path, user_id):
@@ -23,6 +44,7 @@ class RestCall(Base):
     __tablename__ = 'rest_call'
 
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))    # user who last edited this call
     method = Column(String(8))
     path = Column(String(64))
     description = Column(String(512))

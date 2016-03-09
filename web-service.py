@@ -22,6 +22,10 @@ import random
 import string
 
 APPLICATION_NAME = "API Editor Website"
+CLIENT_ID = json.loads(
+    open('client_secrets.json', 'r').read())['web']['client_id']
+APPLICATION_NAME = "Restaurant Menu Application"    # still using this name from the class example
+
 
 #Connect to Database and create database session
 engine = create_engine(db_connection_info)
@@ -48,7 +52,7 @@ def showLogin():
 
 #GET form to edit a new REST call, POST form data to create it.
 @app.route('/api/create', methods=['GET','POST'])
-def createRestCalls():
+def createRestCall():
   if 'user_id' not in login_session:
     return redirect('/login')
   if request.method == 'GET':
@@ -64,7 +68,11 @@ def createRestCalls():
 @app.route('/api/<int:call_id>')
 def showRestCallDetail(call_id):
   restCall = session.query(RestCall).filter_by(id = call_id).one()
-  return render_template('restCallDetail.html', restCall = restCall)
+  if 'user_id' in login_session and restCall.user_id == login_session['user_id']:
+    html = 'protectedRestCallDetail.html'
+  else:
+    html = 'protectedRestCallDetail.html'
+  return render_template(html, restCall = restCall)
 
 #GET form to edit a REST call, POST form data to update it.
 @app.route('/api/<int:call_id>/edit/', methods = ['GET', 'POST'])
@@ -76,11 +84,11 @@ def editRestCall(call_id):
     return render_template('editRestCall.html', restCall = restCall)
   else:
     if request.form['method']:
-      return request.form['method']
+      restCall.method = request.form['method']
     if request.form['path']:
-      return request.form['path']
+      restCall.path = request.form['path']
     flash('Successfully Edited %s' % restCall.__repr__())
-    return redirect(url_for('showRestCalls'))
+    return redirect(url_for('showRestCallDetail', call_id = restCall.id))
 
 #GET form to delete a REST call, POST form data to perform the delete.
 @app.route('/api/<int:call_id>/delete/', methods = ['GET','POST'])
@@ -89,12 +97,124 @@ def deleteRestCall(call_id):
     return redirect('/login')
   restCall = session.query(RestCall).filter_by(id = call_id).one()
   if request.method == 'GET':
-    return render_template('deleteRestCall.html',restCall = restCall)
+    return render_template('deleteRestCall.html', restCall = restCall)
   else:
     session.delete(restCall)
+    session.commit()
     flash('%s Successfully Deleted' % restCall.name)
+    return redirect(url_for('showRestCalls'))
+
+#GET form to edit a REST call DESCRIPTION, POST form data to update it.
+@app.route('/api/<int:call_id>/editDescription', methods = ['GET', 'POST'])
+def editDescription(call_id):
+  if 'user_id' not in login_session:
+    return redirect('/login')
+  restCall = session.query(RestCall).filter_by(id = call_id).one()
+  if request.method == 'GET':
+    return render_template('editDescription.html', restCall = restCall)
+  else:
+    if request.form['description']:
+      restCall.description = request.form['description']
+    return redirect(url_for('showRestCallDetail', call_id = restCall.id))
+
+#GET form to edit a REST call EXAMPLE REQUEST, POST form data to update it.
+@app.route('/api/<int:call_id>/editExampleRequest', methods = ['GET', 'POST'])
+def editExampleRequest(call_id):
+  if 'user_id' not in login_session:
+    return redirect('/login')
+  restCall = session.query(RestCall).filter_by(id = call_id).one()
+  if request.method == 'GET':
+    return render_template('editExampleRequest.html', restCall = restCall)
+  else:
+    if request.form['exampleRequest']:
+      restCall.exampleRequest = request.form['exampleRequest']
+    return redirect(url_for('showRestCallDetail', call_id = restCall.id))
+
+#GET form to edit a REST call EXAMPLE RESPONSE, POST form data to update it.
+@app.route('/api/<int:call_id>/editExampleResponse', methods = ['GET', 'POST'])
+def editExampleResponse(call_id):
+  if 'user_id' not in login_session:
+    return redirect('/login')
+  restCall = session.query(RestCall).filter_by(id = call_id).one()
+  if request.method == 'GET':
+    return render_template('editExampleResponse.html', restCall = restCall)
+  else:
+    if request.form['exampleResponse']:
+      restCall.exampleResponse = request.form['exampleResponse']
+    return redirect(url_for('showRestCallDetail', call_id = restCall.id))
+
+#GET form to edit a new REST call PARAMETER, POST form data to create it.
+@app.route('/api/<int:call_id>/createParameter', methods=['GET','POST'])
+def createParameter(call_id):
+  if 'user_id' not in login_session:
+    return redirect('/login')
+  if request.method == 'GET':
+    return render_template('newParameter.html')
+  else:
+    restCall = session.query(RestCall).filter_by(id = call_id).one()
+    parameter = Parameter(None, None, None, None)
+    if request.form['type']:
+        parameter.type = request.form['type']
+    if request.form['name']:
+        parameter.name = request.form['name']
+    if request.form['range']:
+        parameter.range = request.form['range']
+    if request.form['description']:
+        parameter.description = request.form['description']
+    restCall.parameters.append(parameter)
     session.commit()
     return redirect(url_for('showRestCalls'))
+
+#GET form to edit a REST call PARAMETER, POST form data to update it.
+@app.route('/api/<int:call_id>/parameter/<int:p_id>/edit', methods = ['GET', 'POST'])
+def editParameter(call_id, p_id):
+  if 'user_id' not in login_session:
+    return redirect('/login')
+  parameter = session.query(Parameter).filter_by(id = p_id).one()
+  if request.method == 'GET':
+    return render_template('editParameter.html', call_id = call_id, parameter = parameter)
+  else:
+    if request.form['type']:
+      parameter.type = request.form['type']
+    if request.form['name']:
+      parameter.name = request.form['name']
+    if request.form['range']:
+      parameter.range = request.form['range']
+    if request.form['description']:
+      parameter.description = request.form['description']
+    return redirect(url_for('showRestCallDetail', call_id = call.id))
+
+#GET form to delete a REST call PARAMETER, POST form data to perform the delete.
+@app.route('/api/<int:call_id>/parameter/<int:p_id>/delete', methods = ['GET','POST'])
+def deleteParameter(call_id, p_id):
+  if 'user_id' not in login_session:
+    return redirect('/login')
+  parameter = session.query(Parameter).filter_by(id = p_id).one()
+  if request.method == 'GET':
+    return render_template('deleteParameter.html', call_id = call_id, parameter = parameter)
+  else:
+    session.delete(parameter)
+    session.commit()
+    return redirect(url_for('showRestCallDetail', call_id = call.id))
+
+def createUser(login_session):
+    newUser = User(name = login_session['username'],
+        email = login_session['email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user
+    except:
+        return None
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
