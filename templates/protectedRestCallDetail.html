@@ -5,53 +5,39 @@
 		<div class="col-md-12"></div>
 	</div>
 
-	<h1>{{ restCall.method }}  {{ restCall.path }}</h1>
-
-	<!-- Call edit/delete buttons -->
-	<div class="row padding-top padding-bottom">
-		<div class="col-md-1"></div>
-		<div class="col-md-11 padding-none">
-			<a href="{{url_for('editRestCall', call_id = restCall.id )}}">
-				<button class="btn btn-default" id="edit-rest-call">
-					<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>Edit
-				</button>
-			</a>
-			<a href="{{url_for('deleteRestCall', call_id = restCall.id )}}">
-				<button class="btn btn-default delete" id="delete-rest-call">
-					<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>Delete
-				</button>
-			</a>
-		</div>
-		<div class="col-md-7"></div>
-	</div>
-
+	<h1>{{ restCall.method }}  {{ restCall.path }}
+	<a href="{{url_for('editRestCall', call_id = restCall.id )}}">
+		<button class="btn-small btn-default" id="edit-rest-call">Edit</button>
+	</a>
+		<a href="{{url_for('deleteRestCall', call_id = restCall.id )}}">
+			<button class="btn-small btn-default" id="delete-rest-call">Delete</button>
+		</a>
+	</h1>
 
 	{{restCall.description}}
-	<!-- description edit/delete buttons -->
-	<div class="row padding-top padding-bottom">
-		<div class="col-md-1"></div>
-		<div class="col-md-11 padding-none">
-			<a href="{{url_for('editDescription', call_id = restCall.id )}}">
-				<button class="btn btn-default" id="edit-description">
-					<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>Edit
-				</button>
-			</a>
-		</div>
-		<div class="col-md-7"></div>
-	</div>
+	<a href="{{url_for('editDescription', call_id = restCall.id )}}">
+		<button class="btn-small btn-default" id="edit-description">Edit</button>
+	</a>
 
+	<h2>Parameters
+		<a href="{{url_for('createParameter', call_id = restCall.id )}}">
+			<button class="btn-small btn-default" id="new-parameter">Add Parameter</button>
+		</a>
+	</h2>
 
-	<h2>Parameters</h2>
 	<table class="table">
 		<div class="col-md-12">
 			<tr color=green>
 				<td>Type</td>
 				<td>Name</td>
 				<td>Description</td>
+				<td>Range</td>
+				<td>Required</td>
+				<td>Default</td>
 				<td></td>
 			</tr>
 		</div>
-	{% for param in restCall.parameters %}
+        {% for param in restCall.parameters %}
 			<div class="row">
 				<div class="col-md-1"></div>
 					<div class="col-md-10 parameter-descr-list">
@@ -59,78 +45,42 @@
 							<td>{{param.type}}</td>
 							<td>{{param.name}}</td>
 							<td>{{param.description}}</td>
+							<td>{{param.range}}</td>
+							<td>{% if param.required %}Y{% else %}N{% endif %}</td>
+							<td>{{param.default}}</td>
 							<td>
-								<!-- parameter edit/delete buttons -->
-								<div class="row padding-top padding-bottom">
-									<div class="col-md-1"></div>
-									<div class="col-md-11 padding-none">
-										<a href="{{url_for('editParameter', call_id = restCall.id, parameter_id = parameter.id )}}">
-											<button class="btn btn-default" id="edit-parameter">
-												<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>Edit
-											</button>
+										<a href="{{url_for('editParameter', call_id = restCall.id, parameter_id = param.id )}}">
+											<button class="btn-small btn-default" id="edit-parameter">Edit</button>
 										</a>
-										<a href="{{url_for('deleteParameter', call_id = restCall.id, parameter_id = parameter.id )}}">
-											<button class="btn btn-default delete" id="delete-parameter">
-												<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>Delete
-											</button>
+										<a href="{{url_for('deleteParameter', call_id = restCall.id, parameter_id = param.id )}}">
+											<button class="btn-small btn-default delete" id="delete-parameter">Delete</button>
 										</a>
-									</div>
-									<div class="col-md-7"></div>
-								</div>
 							</td>
 						</tr>
 					</div>
 				<div class="col-md-1"></div>
 			</div>
-	{% endfor %}
+	    {% endfor %}
 	</table>
-	<!-- parameter add (create new) button -->
-	<div class="row padding-top padding-bottom">
-		<div class="col-md-1"></div>
-		<div class="col-md-10 padding-none">
-			<a href="{{url_for('createParameter', call_id = restCall.id)}}">
-				<button class="btn btn-default" id="new-parameter">
-					<span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>New Parameter
-				</button>
-			</a>
-		</div>
-		<div class="col-md-1"></div>
-	</div>
 
-	<h2>Example Request</h2>
+	<h2>Example Request
+	<a href="{{url_for('editExampleRequest', call_id = restCall.id )}}">
+		<button class="btn-small btn-default" id="edit-example-request">Edit</button>
+	</a>
+	</h2>
+
 <pre>
 {{restCall.exampleRequest}}
 </pre>
-	<!-- example request edit button -->
-	<div class="row padding-top padding-bottom">
-		<div class="col-md-1"></div>
-		<div class="col-md-11 padding-none">
-			<a href="{{url_for('editExampleRequest', call_id = restCall.id )}}">
-				<button class="btn btn-default" id="edit-example-request">
-					<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>Edit
-				</button>
-			</a>
-		</div>
-		<div class="col-md-7"></div>
-	</div>
 
+	<h2>Example Response
+	<a href="{{url_for('editExampleResponse', call_id = restCall.id )}}">
+		<button class="btn-small btn-default" id="edit-example-request">Edit</button>
+	</a>
+	</h2>
 
-	<h2>Example Response</h2>
 <pre>
 {{restCall.exampleResponse}}
 </pre>
-	<!-- example request edit button -->
-	<div class="row padding-top padding-bottom">
-		<div class="col-md-1"></div>
-		<div class="col-md-11 padding-none">
-			<a href="{{url_for('editExampleResponse', call_id = restCall.id )}}">
-				<button class="btn btn-default" id="edit-example-response">
-					<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>Edit
-				</button>
-			</a>
-		</div>
-		<div class="col-md-7"></div>
-	</div>
-
 	
 {% endblock %}

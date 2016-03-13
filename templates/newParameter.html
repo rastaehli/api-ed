@@ -1,0 +1,70 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+	<div class="row divider green">
+		<div class="col-md-12"></div>
+	</div>
+	<div class="row banner menu">
+		<div class="col-md-11 col-md-offset-1 padding-none">
+			<h1>New Parameter</h1>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 col-md-offset-1 padding-top">
+			<form action="#" method = "post">
+				<div class="form-group">
+					<label for="type">Type:</label>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="type" id="Authentication Header" value="Authentication Header">Authentication Header
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="type" id="Path Parameter" value="Path Parameter">URL Path Parameter
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="type" id="URL Parameter" value="URL Parameter">URL Query Parameter
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="type" id="Body Parameter" value="Body Parameter">Request Body Parameter
+					  </label>
+					</div>
+
+					<label for="name">Name:</label>
+					<input type ="text" maxlength="50" class="form-control" name="name"placeholder="parameter name">
+
+					<label for="range">Range:</label>
+					<textarea class="form-control" maxlength="250" rows="3" name="range" placeholder="value type and range"></textarea>
+
+					<label for="description">Description:</label>
+					<textarea class="form-control" maxlength="250" rows="3" name="description" placeholder="Description of the parameter's purpose"></textarea>
+
+					<label for="required">Required?</label>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="required" id="required-yes" value="Y">Yes
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="required" id="required-no" value="N">No
+					  </label>
+					</div>
+
+					<label for="default">Default:</label>
+					<textarea class="form-control" maxlength="250" rows="3" name="default" placeholder="Default if not required, or example if required."></textarea>
+
+					<button type="submit" class="btn btn-default" id="submit" type="submit">
+					<span class="glyphicon glyphicon-glass" aria-hidden="true"></span>Create</button>
+				</div>
+			</form>
+		</div>
+	</div>
+{% endblock %}
+
+

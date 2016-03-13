@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 
 Base = declarative_base()
 
@@ -54,6 +54,9 @@ class RestCall(Base):
     parameters = relationship("Parameter",
         back_populates='restCall',
         cascade="all, delete, delete-orphan")
+
+    def name(self):
+        return self.method+' '+self.path
 
     def setDescription(self, description):
         self.description = description
@@ -111,12 +114,14 @@ class RestCall(Base):
 
 class Parameter(Base):
 
-    def __init__(self, aRestCall, type, name, range, description, required, defaulte):
+    def __init__(self, aRestCall, type, name, range, description, required, default):
         self.restCall = aRestCall
         self.type = type
         self.name = name
         self.range = range
         self.description = description
+        self.required = required
+        self.default = default
 
     __tablename__ = 'parameter'
 
@@ -127,6 +132,8 @@ class Parameter(Base):
     name = Column(String(32))
     range = Column(String(64))
     description = Column(String(256))
+    required = Column(Boolean)
+    default = Column(String(256))
 
     def __repr__(self):
         return "<Parameter(type='%s', name='%s', range='%s')>" % (

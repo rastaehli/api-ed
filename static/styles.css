@@ -53,6 +53,13 @@ h3 {
 .padding-none {
 	padding: 0;
 }
+.btn-small{
+	padding: 1px;
+	margin: 0;
+	border-color: #9FB80A;
+	border-width: 2px;
+	color: #9FB80A;;
+}
 .btn {
 	padding: 20px;
 	margin: 0;

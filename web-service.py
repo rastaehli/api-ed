@@ -3,7 +3,6 @@
 # Responsible for handling HTTP requests, implementing pages of the api_ed web site.
 # Uses the 'Flask' framework to bind web site page paths to handler methods, bind
 # python object to HTML templates to render dynamic content.
-
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, make_response
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
@@ -15,7 +14,7 @@ app = Flask(__name__)
 
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from orm import Base, Parameter, RestCall, db_connection_info
+from orm import Base, User, Parameter, RestCall, db_connection_info
 
 from flask import session as login_session
 import random
@@ -39,12 +38,18 @@ session = DBSession()
 @app.route('/api/all')
 def showRestCalls():
   restCalls = session.query(RestCall).order_by(asc(RestCall.path))
+  print('rendering restCalls.html')
   return render_template('restCalls.html', restCalls = restCalls)
 
 # Create unforgeable state token
 @app.route('/login')
 def showLogin():
-    login_session['user_id'] = 'big_security_hole'
+    # # mock valid login by setting user_id in login session and showRestCalls...
+    # print('faking login with hard coded user_id=0')
+    # login_session['user_id'] = 0
+    # return showRestCalls()
+
+    #here is the code we should execute when it's working
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
@@ -101,7 +106,7 @@ def deleteRestCall(call_id):
   else:
     session.delete(restCall)
     session.commit()
-    flash('%s Successfully Deleted' % restCall.name)
+    flash('%s Successfully Deleted' % restCall.name())
     return redirect(url_for('showRestCalls'))
 
 #GET form to edit a REST call DESCRIPTION, POST form data to update it.
@@ -151,8 +156,9 @@ def createParameter(call_id):
   if request.method == 'GET':
     return render_template('newParameter.html')
   else:
+    print('adding parameter to rest call')
     restCall = session.query(RestCall).filter_by(id = call_id).one()
-    parameter = Parameter(None, None, None, None)
+    parameter = Parameter(restCall, None, None, None, None, None, None)
     if request.form['type']:
         parameter.type = request.form['type']
     if request.form['name']:
@@ -161,16 +167,23 @@ def createParameter(call_id):
         parameter.range = request.form['range']
     if request.form['description']:
         parameter.description = request.form['description']
+    if request.form['required']:
+        if request.form['required'] == 'Y':
+          parameter.required = True
+        else:
+          parameter.required = False
+    if request.form['default']:
+        parameter.default = request.form['default']
     restCall.parameters.append(parameter)
     session.commit()
-    return redirect(url_for('showRestCalls'))
+    return redirect(url_for('showRestCallDetail', call_id = restCall.id))
 
 #GET form to edit a REST call PARAMETER, POST form data to update it.
-@app.route('/api/<int:call_id>/parameter/<int:p_id>/edit', methods = ['GET', 'POST'])
-def editParameter(call_id, p_id):
+@app.route('/api/<int:call_id>/parameter/<int:parameter_id>/edit', methods = ['GET', 'POST'])
+def editParameter(call_id, parameter_id):
   if 'user_id' not in login_session:
     return redirect('/login')
-  parameter = session.query(Parameter).filter_by(id = p_id).one()
+  parameter = session.query(Parameter).filter_by(id = parameter_id).one()
   if request.method == 'GET':
     return render_template('editParameter.html', call_id = call_id, parameter = parameter)
   else:
@@ -182,24 +195,23 @@ def editParameter(call_id, p_id):
       parameter.range = request.form['range']
     if request.form['description']:
       parameter.description = request.form['description']
-    return redirect(url_for('showRestCallDetail', call_id = call.id))
+    return redirect(url_for('showRestCallDetail', call_id = call_id))
 
 #GET form to delete a REST call PARAMETER, POST form data to perform the delete.
-@app.route('/api/<int:call_id>/parameter/<int:p_id>/delete', methods = ['GET','POST'])
-def deleteParameter(call_id, p_id):
+@app.route('/api/<int:call_id>/parameter/<int:parameter_id>/delete', methods = ['GET','POST'])
+def deleteParameter(call_id, parameter_id):
   if 'user_id' not in login_session:
     return redirect('/login')
-  parameter = session.query(Parameter).filter_by(id = p_id).one()
+  parameter = session.query(Parameter).filter_by(id = parameter_id).one()
   if request.method == 'GET':
     return render_template('deleteParameter.html', call_id = call_id, parameter = parameter)
   else:
     session.delete(parameter)
     session.commit()
-    return redirect(url_for('showRestCallDetail', call_id = call.id))
+    return redirect(url_for('showRestCallDetail', call_id = call_id))
 
 def createUser(login_session):
-    newUser = User(name = login_session['username'],
-        email = login_session['email'], picture=login_session['picture'])
+    newUser = User(name = login_session['username'], email = login_session['email'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
@@ -266,6 +278,8 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+    print(login_session)
+    print('does that tell you what type of object login_session is?')
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
@@ -275,8 +289,10 @@ def gconnect():
         return response
 
     # Store the access token in the session for later use.
-    login_session['credentials'] = credentials
+    print "storing new credentials from google login"
+    login_session['access_token'] = credentials.access_token
     login_session['gplus_id'] = gplus_id
+    print "done storing new credentials from google login"
 
     # Get user info
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
@@ -286,6 +302,7 @@ def gconnect():
     data = answer.json()
 
     login_session['username'] = data['name']
+    login_session['email'] = data['email']
 
     # if user not yet in DB, create from login session info
     user_id = getUserID(login_session['email']) 
@@ -298,7 +315,7 @@ def gconnect():
     output += login_session['username']
     output += '!</h1>'
     output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    flash("you are now logged in as %s" % login_session['username'])
+    # flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
 
