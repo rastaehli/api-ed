@@ -15,6 +15,34 @@
 				<div class="form-group">
 					<label for="type">Type:</label>
 					<input type ="text" class="form-control" name="type" value="{{parameter.type }}">
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="type" id="Authentication Header" value="Authentication Header" 
+					        {% if parameter.type == 'Authentication Header' %}checked{%endif%}>
+					    Authentication Header
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="type" id="Path Parameter" value="Path Parameter" 
+					        {% if parameter.type == 'Path Parameter' %}checked{%endif%}>
+					    URL Path Parameter
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="type" id="URL Parameter" value="URL Parameter" 
+					        {% if parameter.type == 'URL Parameter' %}checked{%endif%}>
+					    URL Query Parameter
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="type" id="Body Parameter" value="Body Parameter" 
+					        {% if parameter.type == 'Body Parameter' %}checked{%endif%}>
+					    Request Body Parameter
+					  </label>
+					</div>
 					<label for="name">Name:</label>
 					<input type ="text" class="form-control" name="name" value="{{parameter.name }}">
 					<label for="range">range:</label>
@@ -22,14 +50,27 @@
 					<label for="description">description:</label>
 					<input type ="text" class="form-control" name="description" value="{{parameter.description }}">
 					<div class="padding-bottom"></div>
+					<label for="required">Required?</label>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="required" id="required-yes" value="Y" {% if parameter.required %}checked{%endif%}>Yes
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="required" id="required-no" value="N"{% if not parameter.required %}checked{%endif%}>No
+					  </label>
+					</div>
+					<label for="default">Default:</label>
+					<input type ="text" class="form-control" name="default" value="{{parameter.default }}">
 					<button type="submit" class="btn btn-default" id="submit" type="submit">
 					<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Save</button>
-					<a href = '{{url_for('showRestCallDetail', call_id=call_id)}}'>
-						<button class="btn btn-default delete">
-						<span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel</button>
-					</a>
 				</div>
 			</form>
+			<a href = '{{url_for('showRestCallDetail', call_id = call_id)}}'>
+				<button class="btn btn-default">
+				<span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel</button>
+			</a>
 		</div>
 	</div>
 {% endblock %}
