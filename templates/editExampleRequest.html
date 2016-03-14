@@ -13,6 +13,7 @@
 		<div class="col-md-6 col-md-offset-1 padding-top">
 			<form action="{{ url_for('editExampleRequest',call_id = restCall.id)}}" method = "post">
 				<div class="form-group">
+					<input type="hidden" name="state" value="{{STATE}}">
 					<label for="description">Example request:</label>
 					<textarea class="form-control" maxlength="250" rows="8" name="exampleRequest">{{restCall.exampleRequest}}</textarea>
 					<div class="padding-bottom"></div>

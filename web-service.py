@@ -45,15 +45,32 @@ def showRestCalls():
 @app.route('/login')
 def showLogin():
     # # mock valid login by setting user_id in login session and showRestCalls...
-    # print('faking login with hard coded user_id=0')
-    # login_session['user_id'] = 0
-    # return showRestCalls()
+    print('faking login with hard coded user_id=0')
+    login_session['user_id'] = 1
+    return showRestCalls()
 
     #here is the code we should execute when it's working
+    # return renderWithToken('login.html', STATE=state)
+
+# always add unforgeable token to state change html forms to validate that 
+# submit action POST is from same user session.
+def renderWithToken(template, **kwargs):
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
-    return render_template('login.html', STATE=state)
+    kwargs['STATE'] = state
+    return render_template(template, **kwargs)
+
+# prevent cross-site-request-forgery by verifying request came from same user that
+# requested the form for an app state-change operation.
+def invalidFormUser(request):
+    return request.form['state'] != login_session['state']
+
+# standard response for an invalid form user
+def invalidFormUserResponse():
+    response = make_response(json.dumps('Invalid state parameter.'), 401)
+    response.headers['Content-Type'] = 'application/json'
+    return response
 
 #GET form to edit a new REST call, POST form data to create it.
 @app.route('/api/create', methods=['GET','POST'])
@@ -61,8 +78,10 @@ def createRestCall():
   if 'user_id' not in login_session:
     return redirect('/login')
   if request.method == 'GET':
-    return render_template('newRestCall.html')
+    return renderWithToken('newRestCall.html')
   else:
+    if invalidFormUser(request):
+      return invalidFormUserResponse()
     restCall = RestCall(method= request.form['method'], path=request.form['path'], user_id=login_session['user_id'])
     session.add(restCall)
     session.commit()
@@ -86,8 +105,10 @@ def editRestCall(call_id):
     return redirect('/login')
   restCall = session.query(RestCall).filter_by(id = call_id).one()
   if request.method == 'GET':
-    return render_template('editRestCall.html', restCall = restCall)
+    return renderWithToken('editRestCall.html', restCall = restCall)
   else:
+    if invalidFormUser(request):
+      return invalidFormUserResponse()
     if request.form['method']:
       restCall.method = request.form['method']
     if request.form['path']:
@@ -102,8 +123,10 @@ def deleteRestCall(call_id):
     return redirect('/login')
   restCall = session.query(RestCall).filter_by(id = call_id).one()
   if request.method == 'GET':
-    return render_template('deleteRestCall.html', restCall = restCall)
+    return renderWithToken('deleteRestCall.html', restCall = restCall)
   else:
+    if invalidFormUser(request):
+      return invalidFormUserResponse()
     session.delete(restCall)
     session.commit()
     flash('%s Successfully Deleted' % restCall.name())
@@ -116,8 +139,10 @@ def editDescription(call_id):
     return redirect('/login')
   restCall = session.query(RestCall).filter_by(id = call_id).one()
   if request.method == 'GET':
-    return render_template('editDescription.html', restCall = restCall)
+    return renderWithToken('editDescription.html', restCall = restCall)
   else:
+    if invalidFormUser(request):
+      return invalidFormUserResponse()
     if request.form['description']:
       restCall.description = request.form['description']
     return redirect(url_for('showRestCallDetail', call_id = restCall.id))
@@ -129,8 +154,10 @@ def editExampleRequest(call_id):
     return redirect('/login')
   restCall = session.query(RestCall).filter_by(id = call_id).one()
   if request.method == 'GET':
-    return render_template('editExampleRequest.html', restCall = restCall)
+    return renderWithToken('editExampleRequest.html', restCall = restCall)
   else:
+    if invalidFormUser(request):
+      return invalidFormUserResponse()
     if request.form['exampleRequest']:
       restCall.exampleRequest = request.form['exampleRequest']
     return redirect(url_for('showRestCallDetail', call_id = restCall.id))
@@ -142,8 +169,10 @@ def editExampleResponse(call_id):
     return redirect('/login')
   restCall = session.query(RestCall).filter_by(id = call_id).one()
   if request.method == 'GET':
-    return render_template('editExampleResponse.html', restCall = restCall)
+    return renderWithToken('editExampleResponse.html', restCall = restCall)
   else:
+    if invalidFormUser(request):
+      return invalidFormUserResponse()
     if request.form['exampleResponse']:
       restCall.exampleResponse = request.form['exampleResponse']
     return redirect(url_for('showRestCallDetail', call_id = restCall.id))
@@ -154,9 +183,10 @@ def createParameter(call_id):
   if 'user_id' not in login_session:
     return redirect('/login')
   if request.method == 'GET':
-    return render_template('newParameter.html')
+    return renderWithToken('newParameter.html')
   else:
-    print('adding parameter to rest call')
+    if invalidFormUser(request):
+      return invalidFormUserResponse()
     restCall = session.query(RestCall).filter_by(id = call_id).one()
     parameter = Parameter(restCall, None, None, None, None, None, None)
     if request.form['type']:
@@ -185,8 +215,10 @@ def editParameter(call_id, parameter_id):
     return redirect('/login')
   parameter = session.query(Parameter).filter_by(id = parameter_id).one()
   if request.method == 'GET':
-    return render_template('editParameter.html', call_id = call_id, parameter = parameter)
+    return renderWithToken('editParameter.html', call_id = call_id, parameter = parameter)
   else:
+    if invalidFormUser(request):
+      return invalidFormUserResponse()
     if request.form['type']:
       parameter.type = request.form['type']
     if request.form['name']:
@@ -195,6 +227,13 @@ def editParameter(call_id, parameter_id):
       parameter.range = request.form['range']
     if request.form['description']:
       parameter.description = request.form['description']
+    if request.form['required']:
+        if request.form['required'] == 'Y':
+          parameter.required = True
+        else:
+          parameter.required = False
+    if request.form['default']:
+        parameter.default = request.form['default']
     return redirect(url_for('showRestCallDetail', call_id = call_id))
 
 #GET form to delete a REST call PARAMETER, POST form data to perform the delete.
@@ -204,8 +243,10 @@ def deleteParameter(call_id, parameter_id):
     return redirect('/login')
   parameter = session.query(Parameter).filter_by(id = parameter_id).one()
   if request.method == 'GET':
-    return render_template('deleteParameter.html', call_id = call_id, parameter = parameter)
+    return renderWithToken('deleteParameter.html', call_id = call_id, parameter = parameter)
   else:
+    if invalidFormUser(request):
+      return invalidFormUserResponse()
     session.delete(parameter)
     session.commit()
     return redirect(url_for('showRestCallDetail', call_id = call_id))
@@ -230,13 +271,9 @@ def getUserID(email):
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
-    # Validate state token
-    print "getting state"
     if request.args.get('state') != login_session['state']:
-        print "did not get state"
-        response = make_response(json.dumps('Invalid state parameter.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+      return invalidFormUserResponse()
+
     # Obtain authorization code
     code = request.data
     print "authorization code is "+code

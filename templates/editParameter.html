@@ -13,13 +13,13 @@
 		<div class="col-md-6 col-md-offset-1 padding-top">
 			<form action="{{ url_for('editParameter', call_id=call_id, parameter_id=parameter.id)}}" method = "post">
 				<div class="form-group">
+					<input type="hidden" name="state" value="{{STATE}}">
 					<label for="type">Type:</label>
-					<input type ="text" class="form-control" name="type" value="{{parameter.type }}">
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="type" id="Authentication Header" value="Authentication Header" 
-					        {% if parameter.type == 'Authentication Header' %}checked{%endif%}>
-					    Authentication Header
+					    <input type="radio" name="type" id="Authorization Header" value="Authorization Header" 
+					        {% if parameter.type == 'Authorization Header' %}checked{%endif%}>
+					    Authorization Header
 					  </label>
 					</div>
 					<div class="radio">

@@ -13,6 +13,7 @@
 		<div class="col-md-6 col-md-offset-1 padding-top">
 			<form action="{{ url_for('editDescription',call_id = restCall.id)}}" method = "post">
 				<div class="form-group">
+					<input type="hidden" name="state" value="{{STATE}}">
 					<label for="description">Description:</label>
 					<input type ="text" class="form-control" name="description" value="{{restCall.description }}">
 					<div class="padding-bottom"></div>

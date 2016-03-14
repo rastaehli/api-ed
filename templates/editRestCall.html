@@ -13,8 +13,36 @@
 		<div class="col-md-6 col-md-offset-1 padding-top">
 			<form action="{{ url_for('editRestCall',call_id = restCall.id)}}" method = "post">
 				<div class="form-group">
-					<label for="method">Method:</label>
-					<input type ="text" class="form-control" name="method" value="{{restCall.method }}">
+					<input type="hidden" name="state" value="{{STATE}}">
+				<label for="method">Method:</label>
+				<div class="radio">
+				  <label>
+				    <input type="radio" name="method" id="GET" value="GET" 
+				        {% if restCall.method == 'GET' %}checked{%endif%}>
+				    GET
+				  </label>
+				</div>
+				<div class="radio">
+				  <label>
+				    <input type="radio" name="method" id="POST" value="POST" 
+				        {% if restCall.method == 'POST' %}checked{%endif%}>
+				    POST
+				  </label>
+				</div>
+				<div class="radio">
+				  <label>
+				    <input type="radio" name="method" id="PUT" value="PUT" 
+				        {% if restCall.method == 'PUT' %}checked{%endif%}>
+				    PUT
+				  </label>
+				</div>
+				<div class="radio">
+				  <label>
+				    <input type="radio" name="method" id="DELETE" value="DELETE" 
+				        {% if restCall.method == 'DELETE' %}checked{%endif%}>
+				    DELETE
+				  </label>
+				</div>
 					<label for="path">Path:</label>
 					<input type ="text" class="form-control" name="path" value="{{restCall.path }}">
 					<div class="padding-bottom"></div>
