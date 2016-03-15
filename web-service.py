@@ -41,6 +41,38 @@ def showRestCalls():
   print('rendering restCalls.html')
   return render_template('restCalls.html', restCalls = restCalls)
 
+# got this JSONEncoder class from https://blogs.gnome.org/danni/2013/03/07/generating-json-from-sqlalchemy-objects/
+class JSONEncoder(json.JSONEncoder):
+    """
+    Wrapper class to try calling an object's tojson() method. This allows
+    us to JSONify objects coming from the ORM. Also handles dates and datetimes.
+    """
+ 
+    def default(self, obj):
+        # if isinstance(obj, datetime.date):
+        #     return obj.isoformat()
+ 
+        try:
+            return obj.tojson()
+        except AttributeError:
+            return json.JSONEncoder.default(self, obj)
+
+def jsonify(*args, **kwargs):
+    """
+    Workaround for Flask's jsonify not allowing replacement of the JSONEncoder
+    in my version of Flask.
+    """
+ 
+    return app.response_class(json.dumps(dict(*args, **kwargs),
+                                         cls=JSONEncoder),
+                              mimetype='application/json')
+
+# GET list of all api calls
+@app.route('/api/all/json')
+def jsonifyRestCalls():
+  restCalls = session.query(RestCall).order_by(asc(RestCall.path))
+  return jsonify({ 'api': list(restCalls)})
+                    
 # Create unforgeable state token
 @app.route('/login')
 def showLogin():
@@ -98,6 +130,12 @@ def showRestCallDetail(call_id):
     html = 'protectedRestCallDetail.html'
   return render_template(html, restCall = restCall)
 
+#GET all detail of RestCall as JSON
+@app.route('/api/<int:call_id>/json')
+def jsonRestCallDetail(call_id):
+  restCall = session.query(RestCall).filter_by(id = call_id).one()
+  return jsonify({'call': restCall})
+                    
 #GET form to edit a REST call, POST form data to update it.
 @app.route('/api/<int:call_id>/edit/', methods = ['GET', 'POST'])
 def editRestCall(call_id):
