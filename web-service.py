@@ -26,14 +26,14 @@ CLIENT_ID = json.loads(
 APPLICATION_NAME = "Restaurant Menu Application"    # still using this name from the class example
 
 
-#Connect to Database and create database session
+# Connect to Database and create database session
 engine = create_engine(db_connection_info)
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-#Show all REST calls
+# Show all REST calls
 @app.route('/')
 @app.route('/api/all')
 def showRestCalls():
@@ -73,16 +73,10 @@ def jsonifyRestCalls():
   restCalls = session.query(RestCall).order_by(asc(RestCall.path))
   return jsonify({ 'api': list(restCalls)})
                     
-# Create unforgeable state token
 @app.route('/login')
+# Create unforgeable state token
 def showLogin():
-    # # mock valid login by setting user_id in login session and showRestCalls...
-    print('faking login with hard coded user_id=0')
-    login_session['user_id'] = 1
-    return showRestCalls()
-
-    #here is the code we should execute when it's working
-    # return renderWithToken('login.html', STATE=state)
+    return renderWithToken('login.html')
 
 # always add unforgeable token to state change html forms to validate that 
 # submit action POST is from same user session.
@@ -104,7 +98,7 @@ def invalidFormUserResponse():
     response.headers['Content-Type'] = 'application/json'
     return response
 
-#GET form to edit a new REST call, POST form data to create it.
+# GET form to edit a new REST call, POST form data to create it.
 @app.route('/api/create', methods=['GET','POST'])
 def createRestCall():
   if 'user_id' not in login_session:
@@ -120,7 +114,7 @@ def createRestCall():
     flash('Successfully Created %s' % restCall.__repr__())
     return redirect(url_for('showRestCalls'))
 
-#GET all detail of RestCall
+# GET all detail of RestCall
 @app.route('/api/<int:call_id>')
 def showRestCallDetail(call_id):
   restCall = session.query(RestCall).filter_by(id = call_id).one()
@@ -130,13 +124,13 @@ def showRestCallDetail(call_id):
     html = 'protectedRestCallDetail.html'
   return render_template(html, restCall = restCall)
 
-#GET all detail of RestCall as JSON
+# GET all detail of RestCall as JSON
 @app.route('/api/<int:call_id>/json')
 def jsonRestCallDetail(call_id):
   restCall = session.query(RestCall).filter_by(id = call_id).one()
   return jsonify({'call': restCall})
                     
-#GET form to edit a REST call, POST form data to update it.
+# GET form to edit a REST call, POST form data to update it.
 @app.route('/api/<int:call_id>/edit/', methods = ['GET', 'POST'])
 def editRestCall(call_id):
   if 'user_id' not in login_session:
@@ -154,7 +148,7 @@ def editRestCall(call_id):
     flash('Successfully Edited %s' % restCall.__repr__())
     return redirect(url_for('showRestCallDetail', call_id = restCall.id))
 
-#GET form to delete a REST call, POST form data to perform the delete.
+# GET form to delete a REST call, POST form data to perform the delete.
 @app.route('/api/<int:call_id>/delete/', methods = ['GET','POST'])
 def deleteRestCall(call_id):
   if 'user_id' not in login_session:
@@ -170,7 +164,7 @@ def deleteRestCall(call_id):
     flash('%s Successfully Deleted' % restCall.name())
     return redirect(url_for('showRestCalls'))
 
-#GET form to edit a REST call DESCRIPTION, POST form data to update it.
+# GET form to edit a REST call DESCRIPTION, POST form data to update it.
 @app.route('/api/<int:call_id>/editDescription', methods = ['GET', 'POST'])
 def editDescription(call_id):
   if 'user_id' not in login_session:
@@ -185,7 +179,7 @@ def editDescription(call_id):
       restCall.description = request.form['description']
     return redirect(url_for('showRestCallDetail', call_id = restCall.id))
 
-#GET form to edit a REST call EXAMPLE REQUEST, POST form data to update it.
+# GET form to edit a REST call EXAMPLE REQUEST, POST form data to update it.
 @app.route('/api/<int:call_id>/editExampleRequest', methods = ['GET', 'POST'])
 def editExampleRequest(call_id):
   if 'user_id' not in login_session:
@@ -200,7 +194,7 @@ def editExampleRequest(call_id):
       restCall.exampleRequest = request.form['exampleRequest']
     return redirect(url_for('showRestCallDetail', call_id = restCall.id))
 
-#GET form to edit a REST call EXAMPLE RESPONSE, POST form data to update it.
+# GET form to edit a REST call EXAMPLE RESPONSE, POST form data to update it.
 @app.route('/api/<int:call_id>/editExampleResponse', methods = ['GET', 'POST'])
 def editExampleResponse(call_id):
   if 'user_id' not in login_session:
@@ -215,7 +209,7 @@ def editExampleResponse(call_id):
       restCall.exampleResponse = request.form['exampleResponse']
     return redirect(url_for('showRestCallDetail', call_id = restCall.id))
 
-#GET form to edit a new REST call PARAMETER, POST form data to create it.
+# GET form to edit a new REST call PARAMETER, POST form data to create it.
 @app.route('/api/<int:call_id>/createParameter', methods=['GET','POST'])
 def createParameter(call_id):
   if 'user_id' not in login_session:
@@ -246,7 +240,7 @@ def createParameter(call_id):
     session.commit()
     return redirect(url_for('showRestCallDetail', call_id = restCall.id))
 
-#GET form to edit a REST call PARAMETER, POST form data to update it.
+# GET form to edit a REST call PARAMETER, POST form data to update it.
 @app.route('/api/<int:call_id>/parameter/<int:parameter_id>/edit', methods = ['GET', 'POST'])
 def editParameter(call_id, parameter_id):
   if 'user_id' not in login_session:
@@ -274,7 +268,7 @@ def editParameter(call_id, parameter_id):
         parameter.default = request.form['default']
     return redirect(url_for('showRestCallDetail', call_id = call_id))
 
-#GET form to delete a REST call PARAMETER, POST form data to perform the delete.
+# GET form to delete a REST call PARAMETER, POST form data to perform the delete.
 @app.route('/api/<int:call_id>/parameter/<int:parameter_id>/delete', methods = ['GET','POST'])
 def deleteParameter(call_id, parameter_id):
   if 'user_id' not in login_session:
@@ -314,7 +308,7 @@ def gconnect():
 
     # Obtain authorization code
     code = request.data
-    print "authorization code is "+code
+    # print "authorization code is "+code
 
     try:
         # Upgrade the authorization code into a credentials object
@@ -364,10 +358,11 @@ def gconnect():
         return response
 
     # Store the access token in the session for later use.
-    print "storing new credentials from google login"
+    # print "storing new credentials.access_token from google login: ", credentials.access_token
     login_session['access_token'] = credentials.access_token
+    # print "storing new gplus_id from google login: ", gplus_id
     login_session['gplus_id'] = gplus_id
-    print "done storing new credentials from google login"
+    # print "done storing new credentials from google login"
 
     # Get user info
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
@@ -390,16 +385,16 @@ def gconnect():
     output += login_session['username']
     output += '!</h1>'
     output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    # flash("you are now logged in as %s" % login_session['username'])
-    print "done!"
+    flash("you are now logged in as %s" % login_session['username'])
+    # print "done!"
     return output
 
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session['access_token']
-    print 'In gdisconnect access token is %s', access_token
-    print 'User name is: ' 
-    print login_session['username']
+    # print 'In gdisconnect access token is %s', access_token
+    # print 'User name is: ' 
+    # print login_session['username']
     if access_token is None:
         print 'Access Token is None'
         response = make_response(json.dumps('Current user not connected.'), 401)
@@ -408,8 +403,8 @@ def gdisconnect():
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
-    print 'result is '
-    print result
+    # print 'result is '
+    # print result
     if result['status'] == '200':
         del login_session['access_token'] 
         del login_session['user_id']

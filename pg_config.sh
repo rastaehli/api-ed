@@ -10,6 +10,11 @@ pip install redis
 pip install passlib
 pip install itsdangerous
 pip install flask-httpauth
+
+pip install werkzeug==0.8.3
+pip install flask==0.9
+pip install Flask=login==0.1.3
+
 su postgres -c 'createuser -dRS vagrant'
 su vagrant -c 'createdb'
 su vagrant -c 'createdb forum'

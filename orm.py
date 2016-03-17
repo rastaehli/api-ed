@@ -50,12 +50,11 @@ class User(Base):
     email = Column(String(250), nullable=False)
     picture = Column(String(250))
 
-    @property
     def serialize(self):
-        """return object data in easily serializable format"""
         return {
-            'name'        : self.name,
-            'id'          : self.id,
+            'id': self.id, 
+            'name': self.name,
+            'email': self.email,
         }
 
 class RestCall(Base):
@@ -158,10 +157,6 @@ class Parameter(Base):
     description = Column(String(256))
     required = Column(Boolean)
     default = Column(String(256))
-
-    def __repr__(self):
-        return "<Parameter(type='%s', name='%s', range='%s')>" % (
-            self.type, self.name, self.range)
 
 db_connection_info = 'postgresql+psycopg2:///api_ed_db'
 
